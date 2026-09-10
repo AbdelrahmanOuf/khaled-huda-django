@@ -14,18 +14,14 @@
       intro.setAttribute("aria-hidden", "true");
       try {
         sessionStorage.setItem(storageKey, "1");
-      } catch (_) {
-        // sessionStorage can be unavailable in strict privacy modes.
-      }
+      } catch (_) {}
       window.setTimeout(() => intro.remove(), reduceMotion ? 0 : 850);
     };
 
     let seen = false;
     try {
       seen = sessionStorage.getItem(storageKey) === "1";
-    } catch (_) {
-      seen = false;
-    }
+    } catch (_) {}
 
     if (seen || reduceMotion) {
       dismissIntro();
@@ -33,12 +29,10 @@
       document.body.classList.add("intro-active");
       intro.setAttribute("aria-hidden", "false");
       const timer = window.setTimeout(dismissIntro, 2800);
-      if (introSkip) {
-        introSkip.addEventListener("click", () => {
-          window.clearTimeout(timer);
-          dismissIntro();
-        }, { once: true });
-      }
+      introSkip?.addEventListener("click", () => {
+        window.clearTimeout(timer);
+        dismissIntro();
+      }, { once: true });
     }
   }
 
@@ -70,28 +64,25 @@
     };
 
     const tryAutoplay = async () => {
-      const started = await playMusic();
-      if (started) return;
+      if (await playMusic()) return;
 
-      // Most mobile browsers block audible autoplay. Start on the visitor's
-      // first intentional interaction while keeping a visible play control.
-      const unlock = async () => {
-        await playMusic();
-        document.removeEventListener("pointerdown", unlock);
-        document.removeEventListener("keydown", unlock);
+      const unlock = async (event) => {
+        if (event?.type === "pointerdown" && musicToggle.contains(event.target)) return;
+        const started = await playMusic();
+        if (started) {
+          document.removeEventListener("pointerdown", unlock);
+          document.removeEventListener("keydown", unlock);
+        }
       };
-      document.addEventListener("pointerdown", unlock, { once: true });
-      document.addEventListener("keydown", unlock, { once: true });
+      document.addEventListener("pointerdown", unlock);
+      document.addEventListener("keydown", unlock);
     };
 
     musicToggle.addEventListener("click", async (event) => {
       event.stopPropagation();
-      if (audio.paused) {
-        await playMusic();
-      } else {
-        audio.pause();
-        syncMusicUI();
-      }
+      if (audio.paused) await playMusic();
+      else audio.pause();
+      syncMusicUI();
     });
 
     audio.addEventListener("play", syncMusicUI);
