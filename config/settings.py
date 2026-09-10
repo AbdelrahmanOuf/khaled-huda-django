@@ -20,34 +20,24 @@ ON_RAILWAY = bool(
     or os.getenv("RAILWAY_PROJECT_ID")
 )
 
-# Local development stays convenient, while Railway defaults to production-safe mode.
 DEBUG = os.getenv("DJANGO_DEBUG", "False" if ON_RAILWAY else "True").lower() == "true"
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost")
-
-# Railway exposes the public hostname through RAILWAY_PUBLIC_DOMAIN. Add it
-# automatically so new Railway deployments do not fail with DisallowedHost.
 if RAILWAY_PUBLIC_DOMAIN and RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
 
-# Keep the current generated Railway hostname explicitly supported as a safe
-# fallback in case the platform variable is unavailable during an early deploy.
 CURRENT_RAILWAY_HOST = "khaled-huda-django-production.up.railway.app"
 if ON_RAILWAY and CURRENT_RAILWAY_HOST not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(CURRENT_RAILWAY_HOST)
-
-# Railway may use this hostname for platform health checks.
 if ON_RAILWAY and "healthcheck.railway.app" not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append("healthcheck.railway.app")
 
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
-
 railway_origins = []
 if RAILWAY_PUBLIC_DOMAIN:
     railway_origins.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
 if ON_RAILWAY:
     railway_origins.append(f"https://{CURRENT_RAILWAY_HOST}")
-
 for origin in railway_origins:
     if origin not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(origin)
@@ -112,7 +102,7 @@ TIME_ZONE = "Africa/Cairo"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STORAGES = {
@@ -120,12 +110,14 @@ STORAGES = {
     "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
 }
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = Path(os.getenv("MEDIA_ROOT", str(BASE_DIR / "media")))
+# Small single-service deployment: Django can serve uploaded media directly.
+# For persistence on Railway, mount a Volume and set MEDIA_ROOT to its mount path.
+SERVE_MEDIA_FILES = os.getenv("SERVE_MEDIA_FILES", "True").lower() == "true"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Railway terminates TLS at its reverse proxy and forwards the original scheme.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False").lower() == "true"
 SESSION_COOKIE_SECURE = not DEBUG
