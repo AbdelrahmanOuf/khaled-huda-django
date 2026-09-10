@@ -13,6 +13,7 @@ from .models import EventSite
 def _default_event():
     return SimpleNamespace(
         couple_names="Abdelrahman & Omnia",
+        event_title="Engagement Celebration",
         eyebrow="Together, always",
         hero_title="Our Forever Begins Here",
         hero_subtitle="We would be delighted to celebrate this beautiful chapter with you.",
@@ -25,6 +26,10 @@ def _default_event():
         intro_enabled=True,
         intro_title="",
         intro_subtitle="A celebration of love, family & forever",
+        music_enabled=False,
+        music_source="",
+        music_title="Our song",
+        music_loop=True,
         invitation_note="Your presence will make our day even more memorable.",
         instagram_url="",
         is_rsvp_open=True,
