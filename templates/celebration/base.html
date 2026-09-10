@@ -14,9 +14,41 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'site/css/site.css' %}">
+    {% if event.hero_mobile_image %}
+    <style>
+        @media (max-width: 760px) {
+            .hero { --hero-image: url('{{ event.hero_mobile_image.url }}') !important; }
+        }
+    </style>
+    {% endif %}
     <script src="{% static 'site/js/site.js' %}" defer></script>
 </head>
 <body>
+    {% if event.intro_enabled %}
+    <div class="cinematic-intro" data-cinematic-intro aria-hidden="true">
+        <div class="intro-grain" aria-hidden="true"></div>
+        <button class="intro-skip" type="button" data-intro-skip>Skip</button>
+        <div class="intro-inner">
+            <span class="intro-line" aria-hidden="true"></span>
+            <p class="intro-eyebrow">A celebration begins</p>
+            <h1>{% if event.intro_title %}{{ event.intro_title }}{% else %}{{ event.couple_names }}{% endif %}</h1>
+            <div class="intro-heart" aria-hidden="true">♡</div>
+            {% if event.intro_subtitle %}<p class="intro-subtitle">{{ event.intro_subtitle }}</p>{% endif %}
+            <span class="intro-line" aria-hidden="true"></span>
+        </div>
+    </div>
+    {% endif %}
+
     {% block content %}{% endblock %}
+
+    <div class="gallery-lightbox" data-lightbox aria-hidden="true" role="dialog" aria-modal="true" aria-label="Gallery image viewer">
+        <button class="lightbox-close" type="button" data-lightbox-close aria-label="Close image viewer">×</button>
+        <button class="lightbox-nav lightbox-prev" type="button" data-lightbox-prev aria-label="Previous image">‹</button>
+        <figure class="lightbox-stage">
+            <img src="" alt="" data-lightbox-image>
+            <figcaption data-lightbox-caption></figcaption>
+        </figure>
+        <button class="lightbox-nav lightbox-next" type="button" data-lightbox-next aria-label="Next image">›</button>
+    </div>
 </body>
 </html>
