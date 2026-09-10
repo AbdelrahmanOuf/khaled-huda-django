@@ -13,7 +13,7 @@ class Command(BaseCommand):
         event, _ = EventSite.objects.update_or_create(
             id=1,
             defaults={
-                "couple_names": "Khaled & Huda",
+                "couple_names": "Abdelrahman & Omnia",
                 "eyebrow": "A beautiful beginning",
                 "hero_title": "Our Forever Begins Here",
                 "hero_subtitle": "Join us as we celebrate love, laughter, and the beginning of our next chapter.",
