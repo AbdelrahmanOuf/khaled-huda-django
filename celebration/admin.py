@@ -288,7 +288,7 @@ class EventSiteAdmin(admin.ModelAdmin):
                     ("soft_background_color", "accent_color"),
                     ("accent_dark_color", "dark_section_color"),
                 ),
-                "description": "Use the color pickers to safely customize the website palette.",
+                "description": "These six colors drive the complete luxury theme, including surfaces, borders, highlights, buttons and dark sections.",
                 "classes": ("collapse",),
             },
         ),

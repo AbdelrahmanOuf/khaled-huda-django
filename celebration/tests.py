@@ -1,5 +1,7 @@
 from datetime import timedelta
+from importlib import import_module
 
+from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -21,6 +23,9 @@ class HomeViewTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Abdelrahman &amp; Omnia")
+        self.assertContains(response, "site/css/luxury-theme.css")
+        self.assertContains(response, 'class="celebration-site"')
+        self.assertContains(response, '<meta name="theme-color" content="#14231F">')
 
     def test_admin_managed_section_copy_is_rendered(self):
         self.event.gallery_kicker = "Private collection"
@@ -177,6 +182,37 @@ class HomeViewTests(TestCase):
 
 
 class EventSiteModelTests(TestCase):
+    def test_new_event_uses_luxury_default_palette(self):
+        event = EventSite(event_datetime=timezone.now() + timedelta(days=10))
+
+        self.assertEqual(event.text_color, "#1C211E")
+        self.assertEqual(event.page_background_color, "#FBF8F2")
+        self.assertEqual(event.soft_background_color, "#EFE7DA")
+        self.assertEqual(event.accent_color, "#C29A5B")
+        self.assertEqual(event.accent_dark_color, "#8A6330")
+        self.assertEqual(event.dark_section_color, "#14231F")
+
+    def test_palette_upgrade_changes_only_the_untouched_original_palette(self):
+        palette_migration = import_module(
+            "celebration.migrations.0007_alter_eventsite_accent_color_and_more"
+        )
+        event = EventSite.objects.create(
+            event_datetime=timezone.now() + timedelta(days=10),
+            **palette_migration.OLD_PALETTE,
+        )
+
+        palette_migration.apply_luxury_palette(apps, schema_editor=None)
+        event.refresh_from_db()
+        for field_name, expected_color in palette_migration.NEW_PALETTE.items():
+            self.assertEqual(getattr(event, field_name), expected_color)
+
+        custom_palette = {**palette_migration.OLD_PALETTE, "accent_color": "#123456"}
+        EventSite.objects.filter(pk=event.pk).update(**custom_palette)
+        palette_migration.apply_luxury_palette(apps, schema_editor=None)
+        event.refresh_from_db()
+        for field_name, expected_color in custom_palette.items():
+            self.assertEqual(getattr(event, field_name), expected_color)
+
     def test_only_one_configuration_validates(self):
         EventSite.objects.create(event_datetime=timezone.now() + timedelta(days=10))
         another_event = EventSite(event_datetime=timezone.now() + timedelta(days=20))

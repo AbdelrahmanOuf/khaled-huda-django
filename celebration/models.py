@@ -256,12 +256,12 @@ class EventSite(models.Model):
     instagram_label = models.CharField(max_length=60, default="Instagram")
 
     # Appearance
-    text_color = models.CharField(max_length=7, default="#211C19", validators=[hex_color_validator])
-    page_background_color = models.CharField(max_length=7, default="#FBF7F2", validators=[hex_color_validator])
-    soft_background_color = models.CharField(max_length=7, default="#F3E9E1", validators=[hex_color_validator])
-    accent_color = models.CharField(max_length=7, default="#BB7D72", validators=[hex_color_validator])
-    accent_dark_color = models.CharField(max_length=7, default="#895B52", validators=[hex_color_validator])
-    dark_section_color = models.CharField(max_length=7, default="#2D2724", validators=[hex_color_validator])
+    text_color = models.CharField(max_length=7, default="#1C211E", validators=[hex_color_validator])
+    page_background_color = models.CharField(max_length=7, default="#FBF8F2", validators=[hex_color_validator])
+    soft_background_color = models.CharField(max_length=7, default="#EFE7DA", validators=[hex_color_validator])
+    accent_color = models.CharField(max_length=7, default="#C29A5B", validators=[hex_color_validator])
+    accent_dark_color = models.CharField(max_length=7, default="#8A6330", validators=[hex_color_validator])
+    dark_section_color = models.CharField(max_length=7, default="#14231F", validators=[hex_color_validator])
 
     updated_at = models.DateTimeField(auto_now=True)
 

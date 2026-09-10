@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="{{ event.page_background_color }}">
+    <meta name="theme-color" content="{{ event.dark_section_color }}">
     <meta name="description" content="{{ event.page_description }}">
     <meta property="og:title" content="{{ event.couple_names }} — {{ event.event_title }}">
     <meta property="og:description" content="{{ event.page_description }}">
@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="{% static 'site/css/music.css' %}">
     <link rel="stylesheet" href="{% static 'site/css/music-autoplay.css' %}">
     <link rel="stylesheet" href="{% static 'site/css/content-controls.css' %}">
+    <link rel="stylesheet" href="{% static 'site/css/luxury-theme.css' %}">
     <style>
         :root {
             --ink: {{ event.text_color }};
@@ -40,7 +41,7 @@
     <script src="{% static 'site/js/site.js' %}" defer></script>
     <script src="{% static 'site/js/experience.js' %}" defer></script>
 </head>
-<body>
+<body class="celebration-site">
     {% if event.intro_enabled %}
     <div class="cinematic-intro" data-cinematic-intro data-intro-key="celebrationIntroSeen-{{ event.pk|default:'default' }}" aria-hidden="true">
         <div class="intro-grain" aria-hidden="true"></div>

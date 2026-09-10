@@ -5,6 +5,7 @@ A polished Django version of a modern engagement / wedding celebration landing p
 ## Features
 
 - Responsive luxury one-page design
+- Cinematic emerald, antique-gold and warm-ivory visual system
 - Event profile editable from Django Admin
 - Complete section copy, visibility and navigation controls
 - Desktop/mobile hero, social preview and browser icon uploads
@@ -51,6 +52,10 @@ For music, enable **Music enabled**, upload an audio file (or add a direct URL),
 blocks it, visitors see the configurable one-tap music entry prompt.
 
 The **View on site** button in the Event Site editor opens the public page so changes can be checked immediately after saving.
+
+The visual system is driven by the six color controls in **14. Appearance**. Borders,
+surfaces, highlights, buttons and dark sections are derived from that palette so custom
+colors remain consistent across the full website.
 
 ## Production
 
