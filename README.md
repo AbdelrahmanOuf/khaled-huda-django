@@ -58,5 +58,8 @@ Set:
 - `DJANGO_CSRF_TRUSTED_ORIGINS=https://your-domain.com`
 - `DATABASE_URL=postgresql://...`
 - `SECURE_SSL_REDIRECT=True`
+- `DJANGO_SUPERUSER_USERNAME=your-admin-name`
+- `DJANGO_SUPERUSER_EMAIL=you@example.com`
+- `DJANGO_SUPERUSER_PASSWORD=use-a-long-unique-password`
 
 The project is ready for Railway / Render / any container hosting provider.
