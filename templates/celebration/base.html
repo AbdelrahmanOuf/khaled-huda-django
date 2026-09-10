@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{% static 'site/css/site.css' %}">
     <link rel="stylesheet" href="{% static 'site/css/experience.css' %}">
     <link rel="stylesheet" href="{% static 'site/css/music.css' %}">
+    <link rel="stylesheet" href="{% static 'site/css/music-autoplay.css' %}">
     <link rel="stylesheet" href="{% static 'site/css/content-controls.css' %}">
     <style>
         :root {
@@ -57,7 +58,15 @@
 
     {% if event.music_enabled and event.music_source %}
     <div class="music-dock" data-music-dock>
-        <audio data-background-music preload="auto" {% if event.music_loop %}loop{% endif %}>
+        <audio
+            data-background-music
+            data-music-autoplay="{{ event.music_autoplay|yesno:'true,false' }}"
+            data-music-volume="{{ event.music_volume }}"
+            preload="auto"
+            playsinline
+            {% if event.music_autoplay %}autoplay{% endif %}
+            {% if event.music_loop %}loop{% endif %}
+        >
             <source src="{{ event.music_source }}">
         </audio>
         <button class="music-button" type="button" data-music-toggle aria-label="Play background music" aria-pressed="false">
@@ -68,6 +77,16 @@
             </span>
         </button>
     </div>
+    {% if event.music_autoplay %}
+    <div class="music-autoplay-gate" data-music-autoplay-gate role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="music-start-title" hidden>
+        <button class="music-autoplay-card" type="button" data-music-start>
+            <span class="music-autoplay-symbol" aria-hidden="true">{{ event.brand_symbol }}</span>
+            <small>{{ event.music_start_prompt }}</small>
+            <strong id="music-start-title">{{ event.music_start_button_label }}</strong>
+            <span class="music-autoplay-note" aria-hidden="true">♪</span>
+        </button>
+    </div>
+    {% endif %}
     {% endif %}
 
     {% block content %}{% endblock %}

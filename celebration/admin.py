@@ -253,13 +253,17 @@ class EventSiteAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "music_enabled",
+                    "music_autoplay",
+                    "music_volume",
                     "music_file",
                     "music_url",
                     "music_title",
                     "music_loop",
+                    "music_start_prompt",
+                    "music_start_button_label",
                     "music_status",
                 ),
-                "description": "The uploaded audio file takes priority over the URL. Autoplay still depends on browser policy.",
+                "description": "The uploaded audio file takes priority over the URL. If audible autoplay is blocked, the visitor gets a polished one-tap entry prompt.",
                 "classes": ("collapse",),
             },
         ),

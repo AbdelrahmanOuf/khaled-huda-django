@@ -209,6 +209,24 @@ class EventSite(models.Model):
         default=False,
         help_text="Enable background music and the visitor music controls.",
     )
+    music_autoplay = models.BooleanField(
+        default=True,
+        help_text=(
+            "Try to start music as soon as the website opens. If the browser blocks "
+            "audible autoplay, an elegant one-tap entry prompt is shown."
+        ),
+    )
+    music_volume = models.PositiveSmallIntegerField(
+        default=55,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Initial music volume from 0 to 100.",
+    )
+    music_start_prompt = models.CharField(
+        max_length=160,
+        default="Tap to begin the celebration with music",
+        help_text="Shown only when the visitor's browser blocks automatic sound.",
+    )
+    music_start_button_label = models.CharField(max_length=60, default="Enter with music")
     music_file = models.FileField(
         upload_to="music/",
         blank=True,

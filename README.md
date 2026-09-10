@@ -14,7 +14,7 @@ A polished Django version of a modern engagement / wedding celebration landing p
 - Safe color pickers for the public website palette
 - Event venue + Google Maps link
 - Fully configurable RSVP copy, guest limit and response messages
-- Background music upload/URL and cinematic intro controls
+- Background music upload/URL, autoplay-first playback, volume and cinematic intro controls
 - CSRF protection + honeypot anti-spam
 - WhiteNoise static files
 - PostgreSQL-ready via `DATABASE_URL`
@@ -45,6 +45,10 @@ Open `http://127.0.0.1:8000/` and admin at `http://127.0.0.1:8000/admin/`.
 4. Edit the event date, venue, section titles, buttons, RSVP wording, music, colors and section visibility in the numbered panels.
 5. Add **Gallery Photos** and **Story Timeline** items at the bottom of the same page, or manage them from their dedicated admin lists.
 6. Use `Order` to rearrange an item and `Is visible` to publish or hide it without deleting it.
+
+For music, enable **Music enabled**, upload an audio file (or add a direct URL), and keep
+**Music autoplay** enabled. The website attempts audible playback immediately; when a browser
+blocks it, visitors see the configurable one-tap music entry prompt.
 
 The **View on site** button in the Event Site editor opens the public page so changes can be checked immediately after saving.
 

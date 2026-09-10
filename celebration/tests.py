@@ -132,6 +132,34 @@ class HomeViewTests(TestCase):
             [("yes", "Yes, I will be there"), ("no", "Sorry, I cannot attend")],
         )
 
+    def test_music_autoplay_and_fallback_prompt_are_rendered(self):
+        self.event.music_enabled = True
+        self.event.music_autoplay = True
+        self.event.music_volume = 65
+        self.event.music_file = "music/celebration.mp3"
+        self.event.music_start_prompt = "Start our celebration with music"
+        self.event.music_start_button_label = "Enter celebration"
+        self.event.save()
+
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, 'data-music-autoplay="true"')
+        self.assertContains(response, 'data-music-volume="65"')
+        self.assertContains(response, "Start our celebration with music")
+        self.assertContains(response, "Enter celebration")
+        self.assertContains(response, "data-music-autoplay-gate")
+
+    def test_music_autoplay_can_be_disabled_from_admin(self):
+        self.event.music_enabled = True
+        self.event.music_autoplay = False
+        self.event.music_file = "music/celebration.mp3"
+        self.event.save()
+
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, 'data-music-autoplay="false"')
+        self.assertNotContains(response, "data-music-autoplay-gate")
+
     def test_custom_success_and_closed_messages_are_used(self):
         self.event.is_rsvp_open = False
         self.event.rsvp_closed_message = "Responses are now closed."
@@ -179,6 +207,9 @@ class EventSiteAdminTests(TestCase):
         self.assertContains(response, "Identity &amp; SEO")
         self.assertContains(response, "Gallery photos")
         self.assertContains(response, "Story timeline")
+        self.assertContains(response, 'name="music_autoplay"')
+        self.assertContains(response, 'name="music_volume"')
+        self.assertContains(response, 'name="music_start_prompt"')
 
     def test_second_event_cannot_be_added_from_admin(self):
         response = self.client.get(reverse("admin:celebration_eventsite_add"))

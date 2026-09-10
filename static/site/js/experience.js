@@ -40,9 +40,43 @@
   const musicToggle = document.querySelector("[data-music-toggle]");
   const musicDock = document.querySelector("[data-music-dock]");
   const musicStatus = document.querySelector("[data-music-status]");
+  const autoplayGate = document.querySelector("[data-music-autoplay-gate]");
+  const musicStart = document.querySelector("[data-music-start]");
 
   if (audio && musicToggle) {
-    audio.volume = 0.55;
+    const configuredVolume = Number.parseInt(audio.dataset.musicVolume || "55", 10);
+    const safeVolume = Number.isFinite(configuredVolume) ? configuredVolume : 55;
+    const wantsAutoplay = audio.dataset.musicAutoplay === "true";
+    const reduceMusicMotion = reduceMotion ? 0 : 460;
+    let gateHideTimer = null;
+    let userPaused = false;
+
+    audio.volume = Math.min(1, Math.max(0, safeVolume / 100));
+
+    const showAutoplayGate = () => {
+      if (!autoplayGate || !musicStart || !wantsAutoplay || userPaused || audio.error) return;
+      if (gateHideTimer) window.clearTimeout(gateHideTimer);
+      autoplayGate.hidden = false;
+      autoplayGate.setAttribute("aria-hidden", "false");
+      document.body.classList.add("music-gate-active");
+      window.requestAnimationFrame(() => {
+        if (autoplayGate.hidden || !audio.paused) return;
+        autoplayGate.classList.add("is-visible");
+        musicStart.focus({ preventScroll: true });
+      });
+      if (musicStatus) musicStatus.textContent = "Tap to start";
+    };
+
+    const hideAutoplayGate = () => {
+      if (!autoplayGate) return;
+      autoplayGate.classList.remove("is-visible");
+      autoplayGate.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("music-gate-active");
+      if (gateHideTimer) window.clearTimeout(gateHideTimer);
+      gateHideTimer = window.setTimeout(() => {
+        autoplayGate.hidden = true;
+      }, reduceMusicMotion);
+    };
 
     const syncMusicUI = () => {
       const playing = !audio.paused && !audio.ended;
@@ -50,44 +84,76 @@
       musicToggle.setAttribute("aria-label", playing ? "Pause background music" : "Play background music");
       musicDock?.classList.toggle("is-playing", playing);
       if (musicStatus) musicStatus.textContent = playing ? "Playing" : "Tap to play";
+      if (playing) hideAutoplayGate();
     };
 
-    const playMusic = async () => {
+    const playMusic = async ({ showFallback = false } = {}) => {
+      if (audio.error) {
+        hideAutoplayGate();
+        if (musicStatus) musicStatus.textContent = "Audio unavailable";
+        return false;
+      }
+
+      audio.muted = false;
       try {
         await audio.play();
         syncMusicUI();
         return true;
-      } catch (_) {
+      } catch (error) {
         syncMusicUI();
+        if (audio.error) {
+          hideAutoplayGate();
+          if (musicStatus) musicStatus.textContent = "Audio unavailable";
+        } else if (showFallback && error?.name !== "NotSupportedError") {
+          showAutoplayGate();
+        }
         return false;
       }
     };
 
     const tryAutoplay = async () => {
-      if (await playMusic()) return;
-
-      const unlock = async (event) => {
-        if (event?.type === "pointerdown" && musicToggle.contains(event.target)) return;
-        const started = await playMusic();
-        if (started) {
-          document.removeEventListener("pointerdown", unlock);
-          document.removeEventListener("keydown", unlock);
-        }
-      };
-      document.addEventListener("pointerdown", unlock);
-      document.addEventListener("keydown", unlock);
+      if (!wantsAutoplay || userPaused || !audio.paused) return;
+      await playMusic({ showFallback: true });
     };
 
     musicToggle.addEventListener("click", async (event) => {
       event.stopPropagation();
-      if (audio.paused) await playMusic();
-      else audio.pause();
+      if (audio.paused) {
+        userPaused = false;
+        await playMusic();
+      } else {
+        userPaused = true;
+        audio.pause();
+      }
       syncMusicUI();
+    });
+
+    const startFromVisitorGesture = async () => {
+      userPaused = false;
+      await playMusic({ showFallback: true });
+    };
+
+    musicStart?.addEventListener("click", startFromVisitorGesture);
+    autoplayGate?.addEventListener("click", (event) => {
+      if (event.target === autoplayGate) startFromVisitorGesture();
     });
 
     audio.addEventListener("play", syncMusicUI);
     audio.addEventListener("pause", syncMusicUI);
-    audio.addEventListener("ended", syncMusicUI);
+    audio.addEventListener("ended", () => {
+      userPaused = true;
+      syncMusicUI();
+    });
+    audio.addEventListener("error", () => {
+      hideAutoplayGate();
+      syncMusicUI();
+      if (musicStatus) musicStatus.textContent = "Audio unavailable";
+    });
+    window.addEventListener("pageshow", tryAutoplay);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") tryAutoplay();
+    });
+
     syncMusicUI();
     tryAutoplay();
   }
