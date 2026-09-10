@@ -1,5 +1,6 @@
-from pathlib import Path
 import os
+import sys
+from pathlib import Path
 
 import dj_database_url
 
@@ -21,6 +22,7 @@ ON_RAILWAY = bool(
 )
 
 DEBUG = os.getenv("DJANGO_DEBUG", "False" if ON_RAILWAY else "True").lower() == "true"
+RUNNING_TESTS = "test" in sys.argv
 
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost")
 if RAILWAY_PUBLIC_DOMAIN and RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
@@ -107,7 +109,13 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"},
+    "staticfiles": {
+        "BACKEND": (
+            "django.contrib.staticfiles.storage.StaticFilesStorage"
+            if RUNNING_TESTS
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        )
+    },
 }
 
 MEDIA_URL = "/media/"

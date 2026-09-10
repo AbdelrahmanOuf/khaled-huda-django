@@ -7,7 +7,7 @@
   const introSkip = document.querySelector("[data-intro-skip]");
 
   if (intro) {
-    const storageKey = "abdelrahmanOmniaIntroSeen";
+    const storageKey = intro.dataset.introKey || "celebrationIntroSeen";
     const dismissIntro = () => {
       intro.classList.add("is-hidden");
       document.body.classList.remove("intro-active");

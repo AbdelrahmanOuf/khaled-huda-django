@@ -1,0 +1,44 @@
+.event-color-input {
+    width: 76px !important;
+    min-height: 42px;
+    padding: 3px !important;
+    border-radius: 9px !important;
+    cursor: pointer;
+}
+
+.module.aligned,
+.inline-group {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.inline-group .inline-related {
+    border-radius: 10px;
+}
+
+.field-hero_preview img,
+.field-hero_mobile_preview img,
+.field-share_image_preview img,
+.field-thumbnail_large img,
+.field-preview img {
+    display: block;
+}
+
+@media (max-width: 767px) {
+    .form-row > div,
+    .form-row .flex-container {
+        min-width: 0;
+    }
+
+    .aligned .form-row input[type="text"],
+    .aligned .form-row input[type="url"],
+    .aligned .form-row input[type="file"],
+    .aligned .form-row textarea,
+    .aligned .form-row select {
+        max-width: 100%;
+    }
+
+    .inline-group .tabular td.original p {
+        position: static;
+    }
+}

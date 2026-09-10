@@ -1,24 +1,25 @@
 {% extends "celebration/base.html" %}
-{% load static %}
 
 {% block content %}
 <div class="page-progress" data-page-progress aria-hidden="true"></div>
 
 <header class="site-header" data-header>
     <a class="brand" href="#top" aria-label="Back to top">
-        <span class="brand-mark" aria-hidden="true">♡</span>
+        <span class="brand-mark" aria-hidden="true">{{ event.brand_symbol }}</span>
         <span>{{ event.couple_names }}</span>
     </a>
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" data-nav-toggle>
-        <span></span><span></span>
-        <span class="sr-only">Toggle navigation</span>
-    </button>
-    <nav class="nav" id="main-nav" data-nav aria-label="Primary navigation">
-        <a href="#story">Our story</a>
-        <a href="#gallery">Moments</a>
-        <a href="#details">Details</a>
-        <a class="nav-cta" href="#rsvp">RSVP</a>
-    </nav>
+    {% if event.navigation_enabled %}
+        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" data-nav-toggle>
+            <span></span><span></span>
+            <span class="sr-only">Toggle navigation</span>
+        </button>
+        <nav class="nav" id="main-nav" data-nav aria-label="Primary navigation">
+            {% if event.story_enabled and story_moments %}<a href="#story">{{ event.nav_story_label }}</a>{% endif %}
+            {% if event.gallery_enabled and gallery_items %}<a href="#gallery">{{ event.nav_gallery_label }}</a>{% endif %}
+            {% if event.details_enabled %}<a href="#details">{{ event.nav_details_label }}</a>{% endif %}
+            {% if event.rsvp_section_enabled %}<a class="nav-cta" href="#rsvp">{{ event.nav_rsvp_label }}</a>{% endif %}
+        </nav>
+    {% endif %}
 </header>
 
 <main id="top">
@@ -30,16 +31,22 @@
         <div class="hero-flourish hero-flourish-right" aria-hidden="true"></div>
 
         <div class="hero-content reveal">
-            <p class="eyebrow">{{ event.eyebrow }}</p>
-            <p class="hero-kicker">{{ event.event_title }}</p>
+            {% if event.eyebrow %}<p class="eyebrow">{{ event.eyebrow }}</p>{% endif %}
+            {% if event.event_title %}<p class="hero-kicker">{{ event.event_title }}</p>{% endif %}
             <h1>{{ event.hero_title }}</h1>
-            <div class="hero-monogram" aria-hidden="true"><span>♡</span></div>
+            <div class="hero-monogram" aria-hidden="true"><span>{{ event.brand_symbol }}</span></div>
             <p class="hero-names">{{ event.couple_names }}</p>
-            <p class="hero-copy">{{ event.hero_subtitle }}</p>
-            <div class="hero-actions">
-                <a class="button button-light" href="#rsvp">Confirm attendance</a>
-                <a class="button button-glass" href="#details">View celebration details</a>
-            </div>
+            {% if event.hero_subtitle %}<p class="hero-copy">{{ event.hero_subtitle }}</p>{% endif %}
+            {% if event.rsvp_section_enabled or event.details_enabled %}
+                <div class="hero-actions">
+                    {% if event.rsvp_section_enabled and event.hero_primary_button_label %}
+                        <a class="button button-light" href="#rsvp">{{ event.hero_primary_button_label }}</a>
+                    {% endif %}
+                    {% if event.details_enabled and event.hero_secondary_button_label %}
+                        <a class="button button-glass" href="#details">{{ event.hero_secondary_button_label }}</a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
 
         <div class="hero-date-card reveal" aria-label="Celebration date">
@@ -47,129 +54,212 @@
             <strong>{{ event.event_datetime|date:"d" }}</strong>
             <small>{{ event.event_datetime|date:"Y" }}</small>
         </div>
-        <a class="scroll-cue" href="#save-the-date" aria-label="Scroll to save the date">
-            <span>Discover</span><i aria-hidden="true"></i>
-        </a>
+        {% if event.discover_label %}
+            <a class="scroll-cue" href="#content-start" aria-label="Continue to the celebration content">
+                <span>{{ event.discover_label }}</span><i aria-hidden="true"></i>
+            </a>
+        {% endif %}
     </section>
 
-    <section class="save-date" id="save-the-date">
-        <div class="section-shell save-date-grid">
-            <div class="save-date-intro reveal">
-                <p class="section-kicker">Save the date</p>
-                <h2>One beautiful day,<br><em>one forever.</em></h2>
-            </div>
-            <div class="save-date-copy reveal">
-                <p>{{ event.invitation_note }}</p>
-                <div class="event-signature">
-                    <span>{{ event.event_datetime|date:"l" }}</span>
-                    <strong>{{ event.event_datetime|date:"F j, Y" }}</strong>
+    <div id="content-start" class="content-start" aria-hidden="true"></div>
+
+    {% if event.save_date_enabled %}
+        <section class="save-date" id="save-the-date">
+            <div class="section-shell save-date-grid">
+                <div class="save-date-intro reveal">
+                    {% if event.save_date_kicker %}<p class="section-kicker">{{ event.save_date_kicker }}</p>{% endif %}
+                    <h2>{{ event.save_date_title }}{% if event.save_date_title_accent %}<br><em>{{ event.save_date_title_accent }}</em>{% endif %}</h2>
+                </div>
+                <div class="save-date-copy reveal">
+                    {% if event.invitation_note %}<p>{{ event.invitation_note|linebreaksbr }}</p>{% endif %}
+                    <div class="event-signature">
+                        <span>{{ event.event_datetime|date:"l" }}</span>
+                        <strong>{{ event.event_datetime|date:"F j, Y" }}</strong>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="section-shell">
-            <div class="countdown reveal" data-countdown="{{ event.event_datetime|date:'c' }}" aria-label="Countdown to the celebration">
-                <div><strong data-days>00</strong><span>Days</span></div>
-                <div><strong data-hours>00</strong><span>Hours</span></div>
-                <div><strong data-minutes>00</strong><span>Minutes</span></div>
-                <div><strong data-seconds>00</strong><span>Seconds</span></div>
-            </div>
-        </div>
-    </section>
+            {% if event.countdown_enabled %}
+                <div class="section-shell">
+                    <div class="countdown reveal" data-countdown="{{ event.event_datetime|date:'c' }}" aria-label="Countdown to the celebration">
+                        <div><strong data-days>00</strong><span>{{ event.countdown_days_label }}</span></div>
+                        <div><strong data-hours>00</strong><span>{{ event.countdown_hours_label }}</span></div>
+                        <div><strong data-minutes>00</strong><span>{{ event.countdown_minutes_label }}</span></div>
+                        <div><strong data-seconds>00</strong><span>{{ event.countdown_seconds_label }}</span></div>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+    {% endif %}
 
-    <section class="story" id="story">
-        <div class="section-shell">
-            <div class="story-heading reveal">
-                <div><p class="section-kicker">A story worth keeping</p><h2>Our story</h2></div>
-                <p>Some chapters begin quietly. Ours became the kind of story we wanted to celebrate with the people we love most.</p>
+    {% if event.story_enabled and story_moments %}
+        <section class="story" id="story">
+            <div class="section-shell">
+                <div class="story-heading reveal">
+                    <div>
+                        {% if event.story_kicker %}<p class="section-kicker">{{ event.story_kicker }}</p>{% endif %}
+                        <h2>{{ event.story_title }}</h2>
+                    </div>
+                    {% if event.story_intro %}<p>{{ event.story_intro|linebreaksbr }}</p>{% endif %}
+                </div>
+                <div class="timeline">
+                    {% for moment in story_moments %}
+                        <article class="timeline-item reveal">
+                            <div class="timeline-number" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</div>
+                            <div class="timeline-body">
+                                {% if moment.date_label %}<p class="timeline-date">{{ moment.date_label }}</p>{% else %}<span></span>{% endif %}
+                                <h3>{{ moment.title }}</h3>
+                                <p>{{ moment.description|linebreaksbr }}</p>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
             </div>
-            <div class="timeline">
-                {% for moment in event.story_moments.all %}
-                    <article class="timeline-item reveal">
-                        <div class="timeline-number" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</div>
-                        <div class="timeline-body">
-                            <p class="timeline-date">{{ moment.date_label }}</p>
-                            <h3>{{ moment.title }}</h3>
-                            <p>{{ moment.description }}</p>
-                        </div>
+        </section>
+    {% endif %}
+
+    {% if event.quote_enabled and event.quote_text %}
+        <section class="quote-band" aria-label="Celebration quote">
+            <div class="quote-line" aria-hidden="true"></div>
+            <p class="reveal">“{{ event.quote_text }}”</p>
+            <div class="quote-line" aria-hidden="true"></div>
+        </section>
+    {% endif %}
+
+    {% if event.gallery_enabled and gallery_items %}
+        <section class="gallery-section" id="gallery">
+            <div class="section-shell">
+                <div class="gallery-heading reveal">
+                    <div>
+                        {% if event.gallery_kicker %}<p class="section-kicker">{{ event.gallery_kicker }}</p>{% endif %}
+                        <h2>{{ event.gallery_title }}{% if event.gallery_title_accent %}<br><em>{{ event.gallery_title_accent }}</em>{% endif %}</h2>
+                    </div>
+                    {% if event.gallery_intro %}<p>{{ event.gallery_intro|linebreaksbr }}</p>{% endif %}
+                </div>
+                <div class="gallery-grid">
+                    {% for item in gallery_items %}
+                        <figure class="gallery-card gallery-card-{{ forloop.counter }} reveal">
+                            <img src="{{ item.image.url }}" alt="{{ item.alt_text }}" loading="lazy" decoding="async" style="object-position: {{ item.image_position }};">
+                            <div class="gallery-shade" aria-hidden="true"></div>
+                            {% if item.title or item.caption %}
+                                <figcaption>
+                                    {% if item.title %}<strong>{{ item.title }}</strong>{% endif %}
+                                    {% if item.caption %}<span>{{ item.caption }}</span>{% endif %}
+                                </figcaption>
+                            {% endif %}
+                        </figure>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    {% if event.details_enabled %}
+        <section class="details" id="details">
+            <div class="details-decoration" aria-hidden="true">{{ event.brand_symbol }}</div>
+            <div class="section-shell">
+                <div class="details-heading reveal">
+                    {% if event.details_kicker_text %}<p class="section-kicker">{{ event.details_kicker_text }}</p>{% endif %}
+                    <h2>{{ event.details_title }}{% if event.details_title_accent %}<br><em>{{ event.details_title_accent }}</em>{% endif %}</h2>
+                    {% if event.details_intro %}<p>{{ event.details_intro|linebreaksbr }}</p>{% endif %}
+                </div>
+                <div class="details-cards">
+                    <article class="detail-card reveal">
+                        <span class="detail-icon" aria-hidden="true">01</span>
+                        <p class="detail-label">{{ event.date_card_label }}</p>
+                        <h3>{{ event.event_datetime|date:"F j, Y" }}</h3>
+                        <p>{{ event.event_datetime|date:"l" }} · {{ event.event_datetime|date:"g:i A" }}</p>
                     </article>
-                {% empty %}
-                    <article class="timeline-item reveal"><div class="timeline-number" aria-hidden="true">01</div><div class="timeline-body"><p class="timeline-date">The beginning</p><h3>The day we met</h3><p>Some meetings feel ordinary until they quietly become the beginning of everything.</p></div></article>
-                    <article class="timeline-item reveal"><div class="timeline-number" aria-hidden="true">02</div><div class="timeline-body"><p class="timeline-date">The promise</p><h3>We chose forever</h3><p>A thousand small moments became one beautiful decision: to build our future together.</p></div></article>
-                    <article class="timeline-item reveal"><div class="timeline-number" aria-hidden="true">03</div><div class="timeline-body"><p class="timeline-date">The celebration</p><h3>Now we celebrate</h3><p>And the day feels even more meaningful because we get to share it with you.</p></div></article>
-                {% endfor %}
+                    <article class="detail-card reveal">
+                        <span class="detail-icon" aria-hidden="true">02</span>
+                        <p class="detail-label">{{ event.venue_card_label }}</p>
+                        <h3>{{ event.venue_name }}</h3>
+                        <p>{{ event.venue_address }}</p>
+                        {% if event.maps_url and event.maps_button_label %}
+                            <a class="text-link" href="{{ event.maps_url }}" target="_blank" rel="noopener noreferrer">{{ event.maps_button_label }} <span>↗</span></a>
+                        {% endif %}
+                    </article>
+                    <article class="detail-card detail-card-note reveal">
+                        <span class="detail-icon" aria-hidden="true">03</span>
+                        <p class="detail-label">{{ event.note_card_label }}</p>
+                        <h3>{{ event.note_card_title }}</h3>
+                        <p>{{ event.note_card_text|linebreaksbr }}</p>
+                    </article>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    {% endif %}
 
-    <section class="quote-band" aria-label="Celebration quote">
-        <div class="quote-line" aria-hidden="true"></div><p class="reveal">“And suddenly, every love song made sense.”</p><div class="quote-line" aria-hidden="true"></div>
-    </section>
-
-    <section class="gallery-section" id="gallery">
-        <div class="section-shell">
-            <div class="gallery-heading reveal">
-                <div><p class="section-kicker">Captured with love</p><h2>Our favorite<br><em>moments.</em></h2></div>
-                <p>Each photo and its sentence can be added, replaced and reordered directly from the admin panel.</p>
+    {% if event.rsvp_section_enabled %}
+        <section class="rsvp-section" id="rsvp">
+            <div class="rsvp-art rsvp-art-one" aria-hidden="true"></div>
+            <div class="rsvp-art rsvp-art-two" aria-hidden="true"></div>
+            <div class="section-shell rsvp-grid">
+                <div class="rsvp-copy reveal">
+                    {% if event.rsvp_kicker %}<p class="section-kicker">{{ event.rsvp_kicker }}</p>{% endif %}
+                    <h2>{{ event.rsvp_title }}{% if event.rsvp_title_accent %}<br><em>{{ event.rsvp_title_accent }}</em>{% endif %}</h2>
+                    {% if event.rsvp_intro %}<p>{{ event.rsvp_intro|linebreaksbr }}</p>{% endif %}
+                    <div class="rsvp-meta">
+                        <span>{{ event.event_datetime|date:"F j, Y" }}</span>
+                        <span>{{ event.venue_name }}</span>
+                    </div>
+                </div>
+                <div class="rsvp-panel reveal">
+                    <div class="form-heading"><span>{{ event.rsvp_form_title }}</span><p>{{ event.rsvp_form_subtitle }}</p></div>
+                    {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags }}" role="status">{{ message }}</div>{% endfor %}{% endif %}
+                    {% if event.is_rsvp_open %}
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            <div class="hp-wrap" aria-hidden="true">{{ form.website }}</div>
+                            {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors|striptags }}</div>{% endif %}
+                            <div class="form-row">
+                                <label for="{{ form.name.id_for_label }}">{{ event.rsvp_name_label }}</label>
+                                {{ form.name }}
+                                {% for error in form.name.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                            </div>
+                            <div class="form-row two-col">
+                                <div>
+                                    <label for="{{ form.phone.id_for_label }}">{{ event.rsvp_phone_label }}</label>
+                                    {{ form.phone }}
+                                    {% for error in form.phone.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                                </div>
+                                <div>
+                                    <label for="{{ form.guests.id_for_label }}">{{ event.rsvp_guests_label }}</label>
+                                    {{ form.guests }}
+                                    {% for error in form.guests.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label for="{{ form.attendance.id_for_label }}">{{ event.rsvp_attendance_label }}</label>
+                                {{ form.attendance }}
+                                {% for error in form.attendance.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                            </div>
+                            <div class="form-row">
+                                <label for="{{ form.message.id_for_label }}">{{ event.rsvp_message_label }} <span>{{ event.rsvp_optional_label }}</span></label>
+                                {{ form.message }}
+                                {% for error in form.message.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+                            </div>
+                            <button class="button button-dark button-full" type="submit">{{ event.rsvp_submit_label }} <span aria-hidden="true">→</span></button>
+                        </form>
+                    {% else %}
+                        <p class="rsvp-closed">{{ event.rsvp_closed_message }}</p>
+                    {% endif %}
+                </div>
             </div>
-            <div class="gallery-grid">
-                {% for item in event.gallery_items.all %}
-                    <figure class="gallery-card gallery-card-{{ forloop.counter }} reveal">
-                        <img src="{{ item.image.url }}" alt="{{ item.alt_text }}" loading="lazy" decoding="async">
-                        <div class="gallery-shade" aria-hidden="true"></div>
-                        {% if item.caption %}<figcaption><span>{{ item.caption }}</span></figcaption>{% endif %}
-                    </figure>
-                {% empty %}
-                    <figure class="gallery-card gallery-card-1 reveal"><img src="{% static 'site/images/moment-1.svg' %}" alt="Elegant placeholder for a couple photo" loading="lazy"><div class="gallery-shade"></div></figure>
-                    <figure class="gallery-card gallery-card-2 reveal"><img src="{% static 'site/images/moment-2.svg' %}" alt="Elegant placeholder for a celebration photo" loading="lazy"><div class="gallery-shade"></div></figure>
-                    <figure class="gallery-card gallery-card-3 reveal"><img src="{% static 'site/images/moment-3.svg' %}" alt="Elegant placeholder for an engagement photo" loading="lazy"><div class="gallery-shade"></div></figure>
-                    <figure class="gallery-card gallery-card-4 reveal"><img src="{% static 'site/images/moment-4.svg' %}" alt="Elegant placeholder for a memorable moment" loading="lazy"><div class="gallery-shade"></div></figure>
-                {% endfor %}
-            </div>
-        </div>
-    </section>
-
-    <section class="details" id="details">
-        <div class="details-decoration" aria-hidden="true">♡</div>
-        <div class="section-shell">
-            <div class="details-heading reveal">
-                <p class="section-kicker">{{ event.event_title }}</p>
-                <h2>Where forever<br><em>begins.</em></h2>
-                <p>Everything you need for an effortless arrival and a beautiful evening with us.</p>
-            </div>
-            <div class="details-cards">
-                <article class="detail-card reveal"><span class="detail-icon" aria-hidden="true">01</span><p class="detail-label">Date & time</p><h3>{{ event.event_datetime|date:"F j, Y" }}</h3><p>{{ event.event_datetime|date:"l" }} · {{ event.event_datetime|date:"g:i A" }}</p></article>
-                <article class="detail-card reveal"><span class="detail-icon" aria-hidden="true">02</span><p class="detail-label">Venue</p><h3>{{ event.venue_name }}</h3><p>{{ event.venue_address }}</p>{% if event.maps_url %}<a class="text-link" href="{{ event.maps_url }}" target="_blank" rel="noopener noreferrer">Open in Google Maps <span>↗</span></a>{% endif %}</article>
-                <article class="detail-card detail-card-note reveal"><span class="detail-icon" aria-hidden="true">03</span><p class="detail-label">A little note</p><h3>Come ready to celebrate</h3><p>Your presence is the only gift we need. Bring your smile and stay for the memories.</p></article>
-            </div>
-        </div>
-    </section>
-
-    <section class="rsvp-section" id="rsvp">
-        <div class="rsvp-art rsvp-art-one" aria-hidden="true"></div><div class="rsvp-art rsvp-art-two" aria-hidden="true"></div>
-        <div class="section-shell rsvp-grid">
-            <div class="rsvp-copy reveal"><p class="section-kicker">Kindly reply</p><h2>Will you<br><em>join us?</em></h2><p>We would be delighted to celebrate this chapter with you. Please send your response so we can prepare everything beautifully.</p><div class="rsvp-meta"><span>{{ event.event_datetime|date:"F j, Y" }}</span><span>{{ event.venue_name }}</span></div></div>
-            <div class="rsvp-panel reveal">
-                <div class="form-heading"><span>RSVP</span><p>Please complete the form below.</p></div>
-                {% if messages %}{% for message in messages %}<div class="alert alert-{{ message.tags }}" role="status">{{ message }}</div>{% endfor %}{% endif %}
-                {% if event.is_rsvp_open %}
-                <form method="post" novalidate>
-                    {% csrf_token %}<div class="hp-wrap" aria-hidden="true">{{ form.website }}</div>
-                    {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors|striptags }}</div>{% endif %}
-                    <div class="form-row"><label for="{{ form.name.id_for_label }}">Your name</label>{{ form.name }}{% for error in form.name.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
-                    <div class="form-row two-col"><div><label for="{{ form.phone.id_for_label }}">Phone</label>{{ form.phone }}{% for error in form.phone.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div><div><label for="{{ form.guests.id_for_label }}">Guests</label>{{ form.guests }}{% for error in form.guests.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div></div>
-                    <div class="form-row"><label for="{{ form.attendance.id_for_label }}">Will you attend?</label>{{ form.attendance }}{% for error in form.attendance.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
-                    <div class="form-row"><label for="{{ form.message.id_for_label }}">A message for us <span>Optional</span></label>{{ form.message }}{% for error in form.message.errors %}<small class="field-error">{{ error }}</small>{% endfor %}</div>
-                    <button class="button button-dark button-full" type="submit">Send RSVP <span aria-hidden="true">→</span></button>
-                </form>
-                {% else %}<p class="rsvp-closed">RSVP is currently closed. Thank you for celebrating with us.</p>{% endif %}
-            </div>
-        </div>
-    </section>
+        </section>
+    {% endif %}
 </main>
 
-<footer class="site-footer">
-    <div class="footer-top"><span>With love</span><div class="footer-heart" aria-hidden="true">♡</div><span>Forever</span></div>
-    <p class="footer-names">{{ event.couple_names }}</p><p class="footer-note">Thank you for being part of our story.</p>
-    {% if event.instagram_url %}<a class="footer-social" href="{{ event.instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram ↗</a>{% endif %}<p class="footer-year">{{ event.event_datetime|date:"Y" }}</p>
-</footer>
+{% if event.footer_enabled %}
+    <footer class="site-footer">
+        <div class="footer-top">
+            <span>{{ event.footer_left_label }}</span>
+            <div class="footer-heart" aria-hidden="true">{{ event.brand_symbol }}</div>
+            <span>{{ event.footer_right_label }}</span>
+        </div>
+        <p class="footer-names">{{ event.couple_names }}</p>
+        {% if event.footer_note %}<p class="footer-note">{{ event.footer_note }}</p>{% endif %}
+        {% if event.instagram_url %}<a class="footer-social" href="{{ event.instagram_url }}" target="_blank" rel="noopener noreferrer">{{ event.instagram_label }} ↗</a>{% endif %}
+        <p class="footer-year">{{ event.event_datetime|date:"Y" }}</p>
+    </footer>
+{% endif %}
 {% endblock %}

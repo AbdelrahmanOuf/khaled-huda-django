@@ -1,10 +1,13 @@
 from datetime import timedelta
 
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import EventSite, RSVP
+from .forms import RSVPForm
+from .models import EventSite, GalleryItem, RSVP, StoryMoment
 
 
 class HomeViewTests(TestCase):
@@ -18,6 +21,50 @@ class HomeViewTests(TestCase):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Abdelrahman &amp; Omnia")
+
+    def test_admin_managed_section_copy_is_rendered(self):
+        self.event.gallery_kicker = "Private collection"
+        self.event.gallery_title = "Our newest"
+        self.event.gallery_title_accent = "memories"
+        self.event.gallery_intro = "Every image tells our story."
+        self.event.accent_color = "#123456"
+        self.event.save()
+        GalleryItem.objects.create(
+            event=self.event,
+            image="gallery/example.jpg",
+            title="The first smile",
+            caption="A day we will always remember.",
+            order=1,
+        )
+
+        response = self.client.get(reverse("home"))
+
+        self.assertContains(response, "Private collection")
+        self.assertContains(response, "Our newest")
+        self.assertContains(response, "The first smile")
+        self.assertContains(response, "A day we will always remember.")
+        self.assertContains(response, "--rose: #123456")
+
+    def test_hidden_sections_and_items_are_not_rendered(self):
+        self.event.story_enabled = False
+        self.event.save()
+        StoryMoment.objects.create(
+            event=self.event,
+            title="Hidden story",
+            description="This should never appear.",
+            is_visible=True,
+        )
+        GalleryItem.objects.create(
+            event=self.event,
+            image="gallery/hidden.jpg",
+            title="Hidden photo",
+            is_visible=False,
+        )
+
+        response = self.client.get(reverse("home"))
+
+        self.assertNotContains(response, "Hidden story")
+        self.assertNotContains(response, "Hidden photo")
 
     def test_rsvp_can_be_submitted(self):
         response = self.client.post(
@@ -51,7 +98,89 @@ class HomeViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(RSVP.objects.count(), 0)
 
+    def test_event_guest_limit_is_enforced(self):
+        self.event.rsvp_max_guests = 2
+        self.event.save()
+
+        response = self.client.post(
+            reverse("home"),
+            {
+                "name": "Guest Name",
+                "phone": "+201000000000",
+                "attendance": "yes",
+                "guests": 3,
+                "message": "",
+                "website": "",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(RSVP.objects.count(), 0)
+        self.assertContains(response, "Please choose no more than 2 guests.")
+
+    def test_rsvp_form_uses_admin_managed_labels_and_choices(self):
+        self.event.rsvp_name_placeholder = "Full guest name"
+        self.event.rsvp_attending_option = "Yes, I will be there"
+        self.event.rsvp_declining_option = "Sorry, I cannot attend"
+        self.event.save()
+
+        form = RSVPForm(event=self.event)
+
+        self.assertEqual(form.fields["name"].widget.attrs["placeholder"], "Full guest name")
+        self.assertEqual(
+            list(form.fields["attendance"].choices),
+            [("yes", "Yes, I will be there"), ("no", "Sorry, I cannot attend")],
+        )
+
+    def test_custom_success_and_closed_messages_are_used(self):
+        self.event.is_rsvp_open = False
+        self.event.rsvp_closed_message = "Responses are now closed."
+        self.event.save()
+
+        response = self.client.post(reverse("home"), {}, follow=True)
+
+        self.assertContains(response, "Responses are now closed.")
+        self.assertEqual(RSVP.objects.count(), 0)
+
     def test_healthcheck(self):
         response = self.client.get(reverse("healthcheck"))
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {"status": "ok"})
+
+
+class EventSiteModelTests(TestCase):
+    def test_only_one_configuration_validates(self):
+        EventSite.objects.create(event_datetime=timezone.now() + timedelta(days=10))
+        another_event = EventSite(event_datetime=timezone.now() + timedelta(days=20))
+
+        with self.assertRaises(ValidationError):
+            another_event.full_clean()
+
+
+class EventSiteAdminTests(TestCase):
+    def setUp(self):
+        self.event = EventSite.objects.create(
+            couple_names="Abdelrahman & Omnia",
+            event_datetime=timezone.now() + timedelta(days=30),
+        )
+        self.admin_user = get_user_model().objects.create_superuser(
+            username="site-admin",
+            email="admin@example.com",
+            password="a-secure-test-password",
+        )
+        self.client.force_login(self.admin_user)
+
+    def test_control_center_renders_with_all_inlines(self):
+        response = self.client.get(
+            reverse("admin:celebration_eventsite_change", args=(self.event.pk,))
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Identity &amp; SEO")
+        self.assertContains(response, "Gallery photos")
+        self.assertContains(response, "Story timeline")
+
+    def test_second_event_cannot_be_added_from_admin(self):
+        response = self.client.get(reverse("admin:celebration_eventsite_add"))
+
+        self.assertEqual(response.status_code, 403)

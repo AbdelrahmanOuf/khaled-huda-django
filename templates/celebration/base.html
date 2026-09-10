@@ -4,18 +4,31 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f5efe9">
-    <meta name="description" content="Celebrate {{ event.couple_names }} — {{ event.event_title }}.">
+    <meta name="theme-color" content="{{ event.page_background_color }}">
+    <meta name="description" content="{{ event.page_description }}">
     <meta property="og:title" content="{{ event.couple_names }} — {{ event.event_title }}">
-    <meta property="og:description" content="{{ event.hero_subtitle }}">
+    <meta property="og:description" content="{{ event.page_description }}">
     <meta property="og:type" content="website">
+    {% if event.share_image %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ event.share_image.url }}">{% endif %}
     <title>{{ event.couple_names }} | {{ event.event_title }}</title>
+    {% if event.site_icon %}<link rel="icon" href="{{ event.site_icon.url }}">{% endif %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'site/css/site.css' %}">
     <link rel="stylesheet" href="{% static 'site/css/experience.css' %}">
     <link rel="stylesheet" href="{% static 'site/css/music.css' %}">
+    <link rel="stylesheet" href="{% static 'site/css/content-controls.css' %}">
+    <style>
+        :root {
+            --ink: {{ event.text_color }};
+            --paper: {{ event.page_background_color }};
+            --paper-2: {{ event.soft_background_color }};
+            --rose: {{ event.accent_color }};
+            --rose-dark: {{ event.accent_dark_color }};
+            --dark: {{ event.dark_section_color }};
+        }
+    </style>
     {% if event.hero_mobile_image %}
     <style>
         @media (max-width: 760px) {
@@ -28,14 +41,14 @@
 </head>
 <body>
     {% if event.intro_enabled %}
-    <div class="cinematic-intro" data-cinematic-intro aria-hidden="true">
+    <div class="cinematic-intro" data-cinematic-intro data-intro-key="celebrationIntroSeen-{{ event.pk|default:'default' }}" aria-hidden="true">
         <div class="intro-grain" aria-hidden="true"></div>
-        <button class="intro-skip" type="button" data-intro-skip>Skip</button>
+        <button class="intro-skip" type="button" data-intro-skip>{{ event.intro_skip_label }}</button>
         <div class="intro-inner">
             <span class="intro-line" aria-hidden="true"></span>
             <p class="intro-eyebrow">{{ event.event_title }}</p>
             <h1>{% if event.intro_title %}{{ event.intro_title }}{% else %}{{ event.couple_names }}{% endif %}</h1>
-            <div class="intro-heart" aria-hidden="true">♡</div>
+            <div class="intro-heart" aria-hidden="true">{{ event.brand_symbol }}</div>
             {% if event.intro_subtitle %}<p class="intro-subtitle">{{ event.intro_subtitle }}</p>{% endif %}
             <span class="intro-line" aria-hidden="true"></span>
         </div>

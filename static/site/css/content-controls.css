@@ -1,0 +1,57 @@
+.content-start {
+    position: relative;
+    top: -1px;
+    height: 1px;
+    scroll-margin-top: 84px;
+}
+
+.quote-band,
+.details {
+    background: var(--dark);
+}
+
+.gallery-grid {
+    grid-auto-rows: 330px;
+}
+
+.gallery-card figcaption {
+    right: 22px;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-width: min(460px, calc(100% - 44px));
+    line-height: 1.25;
+}
+
+.gallery-card figcaption strong {
+    color: #fff;
+    font-family: var(--serif);
+    font-size: clamp(1.25rem, 2.3vw, 1.75rem);
+    font-weight: 600;
+}
+
+.gallery-card figcaption span {
+    display: -webkit-box;
+    overflow: hidden;
+    color: rgba(255, 255, 255, 0.86);
+    font-family: var(--sans);
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+@media (max-width: 680px) {
+    .gallery-grid {
+        grid-auto-rows: minmax(330px, 68vh);
+    }
+
+    .gallery-card figcaption {
+        left: 18px;
+        right: 18px;
+        bottom: 17px;
+        max-width: none;
+    }
+}
