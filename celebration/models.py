@@ -14,7 +14,34 @@ class EventSite(models.Model):
     venue_name = models.CharField(max_length=180, default="The Celebration Venue")
     venue_address = models.CharField(max_length=255, default="Cairo, Egypt")
     maps_url = models.URLField(blank=True)
-    hero_image = models.ImageField(upload_to="hero/", blank=True)
+
+    hero_image = models.ImageField(
+        upload_to="hero/",
+        blank=True,
+        help_text="Desktop hero image. Recommended: landscape image, at least 2000px wide.",
+    )
+    hero_mobile_image = models.ImageField(
+        upload_to="hero/mobile/",
+        blank=True,
+        help_text="Optional mobile hero image. Recommended: portrait 4:5 or 9:16.",
+    )
+
+    intro_enabled = models.BooleanField(
+        default=True,
+        help_text="Show the cinematic opening once per browser session.",
+    )
+    intro_title = models.CharField(
+        max_length=120,
+        blank=True,
+        default="",
+        help_text="Leave empty to use the couple names.",
+    )
+    intro_subtitle = models.CharField(
+        max_length=180,
+        blank=True,
+        default="A celebration of love, family & forever",
+    )
+
     invitation_note = models.TextField(
         blank=True,
         default="Your presence will make our day even more memorable.",
@@ -47,7 +74,10 @@ class StoryMoment(models.Model):
 
 class GalleryItem(models.Model):
     event = models.ForeignKey(EventSite, on_delete=models.CASCADE, related_name="gallery_items")
-    image = models.ImageField(upload_to="gallery/")
+    image = models.ImageField(
+        upload_to="gallery/",
+        help_text="Use high-resolution JPG/WebP images. The site loads gallery images lazily.",
+    )
     alt_text = models.CharField(max_length=180, default="Celebration photo")
     caption = models.CharField(max_length=180, blank=True)
     order = models.PositiveSmallIntegerField(default=0)
