@@ -5,11 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f5efe9">
-    <meta name="description" content="Celebrate {{ event.couple_names }} and their beautiful beginning.">
-    <meta property="og:title" content="{{ event.couple_names }} — Our Forever Begins Here">
+    <meta name="description" content="Celebrate {{ event.couple_names }} — {{ event.event_title }}.">
+    <meta property="og:title" content="{{ event.couple_names }} — {{ event.event_title }}">
     <meta property="og:description" content="{{ event.hero_subtitle }}">
     <meta property="og:type" content="website">
-    <title>{{ event.couple_names }} | Celebration</title>
+    <title>{{ event.couple_names }} | {{ event.event_title }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,12 +32,27 @@
         <button class="intro-skip" type="button" data-intro-skip>Skip</button>
         <div class="intro-inner">
             <span class="intro-line" aria-hidden="true"></span>
-            <p class="intro-eyebrow">A celebration begins</p>
+            <p class="intro-eyebrow">{{ event.event_title }}</p>
             <h1>{% if event.intro_title %}{{ event.intro_title }}{% else %}{{ event.couple_names }}{% endif %}</h1>
             <div class="intro-heart" aria-hidden="true">♡</div>
             {% if event.intro_subtitle %}<p class="intro-subtitle">{{ event.intro_subtitle }}</p>{% endif %}
             <span class="intro-line" aria-hidden="true"></span>
         </div>
+    </div>
+    {% endif %}
+
+    {% if event.music_enabled and event.music_source %}
+    <div class="music-dock" data-music-dock>
+        <audio data-background-music preload="auto" {% if event.music_loop %}loop{% endif %}>
+            <source src="{{ event.music_source }}">
+        </audio>
+        <button class="music-button" type="button" data-music-toggle aria-label="Play background music" aria-pressed="false">
+            <span class="music-icon" aria-hidden="true">♪</span>
+            <span class="music-copy">
+                <strong>{{ event.music_title|default:"Our song" }}</strong>
+                <small data-music-status>Tap to play</small>
+            </span>
+        </button>
     </div>
     {% endif %}
 
