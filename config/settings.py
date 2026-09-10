@@ -5,20 +5,52 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def env_list(name: str, default: str = "") -> list[str]:
+    """Return a clean comma-separated environment variable as a list."""
+    return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
+
+
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
-DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-    if host.strip()
-]
+RAILWAY_PUBLIC_DOMAIN = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
+ON_RAILWAY = bool(
+    RAILWAY_PUBLIC_DOMAIN
+    or os.getenv("RAILWAY_ENVIRONMENT")
+    or os.getenv("RAILWAY_PROJECT_ID")
+)
 
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
-    if origin.strip()
-]
+# Local development stays convenient, while Railway defaults to production-safe mode.
+DEBUG = os.getenv("DJANGO_DEBUG", "False" if ON_RAILWAY else "True").lower() == "true"
+
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost")
+
+# Railway exposes the public hostname through RAILWAY_PUBLIC_DOMAIN. Add it
+# automatically so new Railway deployments do not fail with DisallowedHost.
+if RAILWAY_PUBLIC_DOMAIN and RAILWAY_PUBLIC_DOMAIN not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+
+# Keep the current generated Railway hostname explicitly supported as a safe
+# fallback in case the platform variable is unavailable during an early deploy.
+CURRENT_RAILWAY_HOST = "khaled-huda-django-production.up.railway.app"
+if ON_RAILWAY and CURRENT_RAILWAY_HOST not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(CURRENT_RAILWAY_HOST)
+
+# Railway may use this hostname for platform health checks.
+if ON_RAILWAY and "healthcheck.railway.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("healthcheck.railway.app")
+
+CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS")
+
+railway_origins = []
+if RAILWAY_PUBLIC_DOMAIN:
+    railway_origins.append(f"https://{RAILWAY_PUBLIC_DOMAIN}")
+if ON_RAILWAY:
+    railway_origins.append(f"https://{CURRENT_RAILWAY_HOST}")
+
+for origin in railway_origins:
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -93,6 +125,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Railway terminates TLS at its reverse proxy and forwards the original scheme.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False").lower() == "true"
 SESSION_COOKIE_SECURE = not DEBUG
