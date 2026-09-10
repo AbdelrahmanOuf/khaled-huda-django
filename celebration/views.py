@@ -12,7 +12,7 @@ from .models import EventSite
 
 def _default_event():
     return SimpleNamespace(
-        couple_names="Khaled & Huda",
+        couple_names="Abdelrahman & Omnia",
         eyebrow="Together, always",
         hero_title="Our Forever Begins Here",
         hero_subtitle="We would be delighted to celebrate this beautiful chapter with you.",
