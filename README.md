@@ -1,4 +1,4 @@
-# Khaled & Huda — Django Celebration Website
+# Abdelrahman & Omnia — Django Celebration Website
 
 A polished Django version of a modern engagement / wedding celebration landing page.
 
