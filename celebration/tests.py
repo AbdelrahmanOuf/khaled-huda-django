@@ -10,14 +10,14 @@ from .models import EventSite, RSVP
 class HomeViewTests(TestCase):
     def setUp(self):
         self.event = EventSite.objects.create(
-            couple_names="Khaled & Huda",
+            couple_names="Abdelrahman & Omnia",
             event_datetime=timezone.now() + timedelta(days=30),
         )
 
     def test_home_page_loads(self):
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Khaled &amp; Huda")
+        self.assertContains(response, "Abdelrahman &amp; Omnia")
 
     def test_rsvp_can_be_submitted(self):
         response = self.client.post(
