@@ -3,7 +3,7 @@ from django.db import models
 
 
 class EventSite(models.Model):
-    couple_names = models.CharField(max_length=120, default="Khaled & Huda")
+    couple_names = models.CharField(max_length=120, default="Abdelrahman & Omnia")
     eyebrow = models.CharField(max_length=120, default="Together, always")
     hero_title = models.CharField(max_length=180, default="Our Forever Begins Here")
     hero_subtitle = models.CharField(
