@@ -7,7 +7,7 @@
   const introSkip = document.querySelector("[data-intro-skip]");
 
   if (intro) {
-    const storageKey = "khaledHudaIntroSeen";
+    const storageKey = "abdelrahmanOmniaIntroSeen";
     const dismissIntro = () => {
       intro.classList.add("is-hidden");
       document.body.classList.remove("intro-active");
@@ -40,6 +40,65 @@
         }, { once: true });
       }
     }
+  }
+
+  const audio = document.querySelector("[data-background-music]");
+  const musicToggle = document.querySelector("[data-music-toggle]");
+  const musicDock = document.querySelector("[data-music-dock]");
+  const musicStatus = document.querySelector("[data-music-status]");
+
+  if (audio && musicToggle) {
+    audio.volume = 0.55;
+
+    const syncMusicUI = () => {
+      const playing = !audio.paused && !audio.ended;
+      musicToggle.setAttribute("aria-pressed", String(playing));
+      musicToggle.setAttribute("aria-label", playing ? "Pause background music" : "Play background music");
+      musicDock?.classList.toggle("is-playing", playing);
+      if (musicStatus) musicStatus.textContent = playing ? "Playing" : "Tap to play";
+    };
+
+    const playMusic = async () => {
+      try {
+        await audio.play();
+        syncMusicUI();
+        return true;
+      } catch (_) {
+        syncMusicUI();
+        return false;
+      }
+    };
+
+    const tryAutoplay = async () => {
+      const started = await playMusic();
+      if (started) return;
+
+      // Most mobile browsers block audible autoplay. Start on the visitor's
+      // first intentional interaction while keeping a visible play control.
+      const unlock = async () => {
+        await playMusic();
+        document.removeEventListener("pointerdown", unlock);
+        document.removeEventListener("keydown", unlock);
+      };
+      document.addEventListener("pointerdown", unlock, { once: true });
+      document.addEventListener("keydown", unlock, { once: true });
+    };
+
+    musicToggle.addEventListener("click", async (event) => {
+      event.stopPropagation();
+      if (audio.paused) {
+        await playMusic();
+      } else {
+        audio.pause();
+        syncMusicUI();
+      }
+    });
+
+    audio.addEventListener("play", syncMusicUI);
+    audio.addEventListener("pause", syncMusicUI);
+    audio.addEventListener("ended", syncMusicUI);
+    syncMusicUI();
+    tryAutoplay();
   }
 
   const lightbox = document.querySelector("[data-lightbox]");
